@@ -5,6 +5,8 @@ import "vitest/config";
 import { execFile } from "node:child_process";
 
 const runLocaleScripts = () => {
+	// Tests compile locales explicitly before running; avoid starting dev watchers.
+	if (process.env.VITEST) return;
 	execFile("yarn", ["locale-compile"], (error, stdout, _stderr) => {
 		if (error) {
 			throw error;

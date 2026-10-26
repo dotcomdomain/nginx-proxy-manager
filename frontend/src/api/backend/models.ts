@@ -208,9 +208,9 @@ export interface Stream {
 	createdOn: string;
 	modifiedOn: string;
 	ownerUserId: number;
-	incomingPort: number;
+	incomingPort: number | string;
 	forwardingHost: string;
-	forwardingPort: number;
+	forwardingPort: number | string;
 	tcpForwarding: boolean;
 	udpForwarding: boolean;
 	meta: Record<string, any>;

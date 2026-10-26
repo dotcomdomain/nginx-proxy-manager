@@ -1,3 +1,65 @@
+## Stream port range fork
+
+Based on Nginx Proxy Manager **v2.16.0**. In **Hosts → Streams**, enter a single
+port or an inclusive range in either port field. Supports TCP, UDP, IPv4, IPv6,
+and the existing TCP SSL options.
+
+| Incoming | Forwarding | Behavior |
+| --- | --- | --- |
+| `27015-27030` | `27015-27030` | Preserve each destination port |
+| `27015-27030` | `28015-28030` | Map ports in order to a different range |
+| `27015-27030` | `8080` | Send all incoming ports to one destination port |
+| `2222` | `22` | Existing single-port behavior |
+
+Ranges must be ascending, within `1-65535`, and have equal sizes when forwarding
+to a range. The API accepts ranges as strings in `incoming_port` and
+`forwarding_port`; ordinary ports remain numbers in responses. Partial updates
+are validated against the saved configuration.
+
+Build your own image on a machine with Docker (the upstream prebuilt image does
+not contain this fork):
+
+```sh
+docker run --rm -v "$PWD/frontend:/app" -w /app node:24-bookworm \
+  sh -c 'corepack enable && yarn install --frozen-lockfile && yarn locale-compile && yarn build'
+docker buildx build --load -f docker/Dockerfile \
+  --build-arg BUILD_VERSION=2.16.0-stream-ranges \
+  -t nginx-proxy-manager:stream-ranges .
+```
+
+Use `image: nginx-proxy-manager:stream-ranges` in your existing Compose service
+and publish the incoming range for each enabled protocol, for example:
+
+```yaml
+ports:
+  - "80:80"
+  - "81:81"
+  - "443:443"
+  - "27015-27030:27015-27030/tcp"
+  - "27015-27030:27015-27030/udp"
+```
+
+Keep your existing `/data` and `/etc/letsencrypt` mounts. Back up the database
+before upgrading: startup migrates the stream port columns to strings while
+preserving existing entries. Rolling back the migration requires removing all
+range entries, including soft-deleted ones, first. Do not reuse a migrated
+database with an unmodified upstream image without restoring a backup.
+
+Each incoming port needs an available listening socket and must be allowed by
+your firewall. Avoid overlapping listeners. A range forwarding to one port uses
+Nginx's native range syntax; a range forwarding to a range creates one server
+block per port per protocol, so large ranges increase configuration size and
+resource use. This fork does not publish Docker ports or change firewalls for you.
+
+Run backend regression tests with `cd backend && npm install && npm test`.
+Run frontend checks with `cd frontend && npm install && npm run locale-compile &&
+npm test -- --run && npm run build`. The included GitHub workflow runs these
+checks and exercises live TCP/UDP forwarding on Linux. Its optional template is
+at `scripts/ci/stream-port-ranges.yml`; copy it to `.github/workflows/` to enable
+it after granting your GitHub login permission to upload workflows.
+
+---
+
 <p align="center">
 	<img src="https://nginxproxymanager.com/github.png">
 	<br><br>

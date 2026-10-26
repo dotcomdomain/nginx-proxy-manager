@@ -29,10 +29,19 @@
 			"$ref": "../common.json#/properties/user_id"
 		},
 		"incoming_port": {
-			"type": "integer",
-			"minimum": 1,
-			"maximum": 65535,
-			"example": 9090
+			"description": "A port from 1 to 65535, or an inclusive ascending range such as 27015-27030. Forwarding ranges must match the incoming range size.",
+			"anyOf": [
+				{
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 65535
+				},
+				{
+					"type": "string",
+					"pattern": "^[1-9][0-9]{0,4}(?:-[1-9][0-9]{0,4})?$"
+				}
+			],
+			"example": "27015-27030"
 		},
 		"forwarding_host": {
 			"anyOf": [
@@ -54,10 +63,19 @@
 			"example": "example.com"
 		},
 		"forwarding_port": {
-			"type": "integer",
-			"minimum": 1,
-			"maximum": 65535,
-			"example": 80
+			"description": "A port from 1 to 65535, or an inclusive ascending range such as 27015-27030. Forwarding ranges must match the incoming range size.",
+			"anyOf": [
+				{
+					"type": "integer",
+					"minimum": 1,
+					"maximum": 65535
+				},
+				{
+					"type": "string",
+					"pattern": "^[1-9][0-9]{0,4}(?:-[1-9][0-9]{0,4})?$"
+				}
+			],
+			"example": "27015-27030"
 		},
 		"tcp_forwarding": {
 			"type": "boolean",

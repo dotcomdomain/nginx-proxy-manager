@@ -6,7 +6,8 @@ import Modal from "react-bootstrap/Modal";
 import { Button, Loading, SSLCertificateField, SSLOptionsFields } from "src/components";
 import { useSetStream, useStream } from "src/hooks";
 import { intl, T } from "src/locale";
-import { validateNumber, validateString } from "src/modules/Validations";
+import { validateStreamPortPair } from "src/modules/StreamPorts";
+import { validateString } from "src/modules/Validations";
 import { showObjectSuccess } from "src/notifications";
 
 const showStreamModal = (id: number | "new") => {
@@ -67,6 +68,7 @@ const StreamModal = EasyModal.create(({ id, visible, remove }: Props) => {
 						} as any
 					}
 					onSubmit={onSubmit}
+					validate={validateStreamPortPair}
 				>
 					{({ setFieldValue }: any) => (
 						<Form>
@@ -111,7 +113,7 @@ const StreamModal = EasyModal.create(({ id, visible, remove }: Props) => {
 									<div className="card-body">
 										<div className="tab-content">
 											<div className="tab-pane active show" id="tab-details" role="tabpanel">
-												<Field name="incomingPort" validate={validateNumber(1, 65535)}>
+												<Field name="incomingPort">
 													{({ field, form }: any) => (
 														<div className="mb-3">
 															<label className="form-label" htmlFor="incomingPort">
@@ -119,12 +121,10 @@ const StreamModal = EasyModal.create(({ id, visible, remove }: Props) => {
 															</label>
 															<input
 																id="incomingPort"
-																type="number"
-																min={1}
-																max={65535}
+																type="text"
 																className={`form-control ${form.errors.incomingPort && form.touched.incomingPort ? "is-invalid" : ""}`}
 																required
-																placeholder="eg: 8080"
+																placeholder="8080 or 27015-27030"
 																{...field}
 															/>
 															{form.errors.incomingPort ? (
@@ -172,10 +172,7 @@ const StreamModal = EasyModal.create(({ id, visible, remove }: Props) => {
 														</Field>
 													</div>
 													<div className="col-md-4">
-														<Field
-															name="forwardingPort"
-															validate={validateNumber(1, 65535)}
-														>
+														<Field name="forwardingPort">
 															{({ field, form }: any) => (
 																<div className="mb-3">
 																	<label
@@ -186,12 +183,10 @@ const StreamModal = EasyModal.create(({ id, visible, remove }: Props) => {
 																	</label>
 																	<input
 																		id="forwardingPort"
-																		type="number"
-																		min={1}
-																		max={65535}
+																		type="text"
 																		className={`form-control ${form.errors.forwardingPort && form.touched.forwardingPort ? "is-invalid" : ""}`}
 																		required
-																		placeholder="eg: 8081"
+																		placeholder="8081 or 27015-27030"
 																		{...field}
 																	/>
 																	{form.errors.forwardingPort ? (
@@ -207,6 +202,13 @@ const StreamModal = EasyModal.create(({ id, visible, remove }: Props) => {
 														</Field>
 													</div>
 												</div>
+												<p className="text-muted small">
+													Use a single port or an ascending range (1-65535). A forwarding
+													range must contain the same number of ports as the incoming range;
+													ports map in order. A single forwarding port receives all incoming
+													ports. Publish the incoming ports in Docker for each selected
+													protocol.
+												</p>
 												<div className="my-3">
 													<h3 className="py-2">
 														<T id="host.flags.protocols" />

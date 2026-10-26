@@ -1,6 +1,7 @@
 import _ from "lodash";
 import errs from "../lib/error.js";
 import { castJsonIfNeed } from "../lib/helpers.js";
+import { validateStreamPorts } from "../lib/stream-ports.js";
 import utils from "../lib/utils.js";
 import streamModel from "../models/stream.js";
 import internalAuditLog from "./audit-log.js";
@@ -28,7 +29,7 @@ const internalStream = {
 		return access
 			.can("streams:create", data)
 			.then((/*access_data*/) => {
-				// TODO: At this point the existing ports should have been checked
+				Object.assign(data, validateStreamPorts(data));
 				data.owner_user_id = access.token.getUserId(1);
 
 				if (typeof data.meta === "undefined") {
@@ -113,6 +114,8 @@ const internalStream = {
 						`Stream could not be updated, IDs do not match: ${row.id} !== ${thisData.id}`,
 					);
 				}
+
+				Object.assign(thisData, validateStreamPorts({ ...row, ...thisData }));
 
 				if (create_certificate) {
 					return internalCertificate

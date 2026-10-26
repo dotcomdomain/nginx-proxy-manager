@@ -42,7 +42,9 @@ export default function Table({ data, isFetching, isFiltered, onEdit, onDelete, 
 			columnHelper.accessor((row: any) => row, {
 				id: "incomingPort",
 				header: intl.formatMessage({ id: "column.incoming-port" }),
-				sortFn: (a, b) => (a.original.incomingPort ?? 0) - (b.original.incomingPort ?? 0),
+				sortFn: (a, b) =>
+					Number.parseInt(String(a.original.incomingPort ?? 0), 10) -
+					Number.parseInt(String(b.original.incomingPort ?? 0), 10),
 				cell: (info: any) => {
 					const value = info.getValue();
 					return <ValueWithDateFormatter value={value.incomingPort} createdOn={value.createdOn} />;

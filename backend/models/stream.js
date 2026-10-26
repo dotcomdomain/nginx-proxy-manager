@@ -26,6 +26,11 @@ class Stream extends Model {
 
 	$parseDatabaseJson(json) {
 		const thisJson = super.$parseDatabaseJson(json);
+		for (const field of ["incoming_port", "forwarding_port"]) {
+			if (typeof thisJson[field] === "string" && /^\d+$/.test(thisJson[field])) {
+				thisJson[field] = Number(thisJson[field]);
+			}
+		}
 		return convertIntFieldsToBool(thisJson, boolFields);
 	}
 

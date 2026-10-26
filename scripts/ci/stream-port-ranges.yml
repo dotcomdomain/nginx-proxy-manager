@@ -1,0 +1,37 @@
+name: Stream port ranges
+
+on:
+  push:
+    branches: [stream-port-ranges]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: sudo apt-get update && sudo apt-get install -y nginx libnginx-mod-stream
+      - run: npm install --no-package-lock
+        working-directory: backend
+      - run: npm test
+        working-directory: backend
+      - run: npm run validate-schema
+        working-directory: backend
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm install --no-package-lock
+        working-directory: frontend
+      - run: npm run locale-compile && npm test -- --run && npm run build
+        working-directory: frontend
